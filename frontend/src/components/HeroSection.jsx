@@ -106,7 +106,7 @@ export default function HeroSection() {
           fontWeight: 400,
         }}
       >
-        Predict prices. Understand why. Book smarter.
+        Predict prices. Understand why. Book smarter. ✈️
       </motion.p>
 
       <motion.div
