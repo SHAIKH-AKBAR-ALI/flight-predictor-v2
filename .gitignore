@@ -1,0 +1,25 @@
+# Environment variables - never commit
+.env
+*.env
+
+# Model files - too large for git
+data/model_artifacts_v2.pkl
+data/model_artifacts.pkl
+data/*.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Docker
+*.log
+
+# VS Code
+.vscode/

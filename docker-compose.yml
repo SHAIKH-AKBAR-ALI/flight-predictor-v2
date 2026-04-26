@@ -1,0 +1,30 @@
+version: '3.9'
+
+networks:
+  app-net:
+    driver: bridge
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    env_file: ./backend/.env
+    environment:
+      # Override the relative path from .env with the correct in-container path
+      MODEL_PATH: /app/data/model_artifacts_v2.pkl
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-net
+    restart: unless-stopped
