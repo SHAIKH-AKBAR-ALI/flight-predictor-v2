@@ -10,7 +10,8 @@ _client = None
 def _get_client() -> Groq:
     global _client
     if _client is None:
-        _client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        # ponytail: max_retries bumped for free-tier TPM limits; paid tier can drop it
+        _client = Groq(api_key=os.getenv("GROQ_API_KEY"), max_retries=5)
     return _client
 
 
