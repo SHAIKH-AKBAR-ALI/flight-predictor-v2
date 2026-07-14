@@ -20,6 +20,16 @@ class PredictionResponse(BaseModel):
     currency: str = "INR"
 
 
+class ChatRequest(BaseModel):
+    session_id: str
+    message: str
+
+
+class ChatResponse(BaseModel):
+    session_id: str
+    reply: str
+
+
 class ExplainResponse(BaseModel):
     predicted_price: float
     currency: str = "INR"

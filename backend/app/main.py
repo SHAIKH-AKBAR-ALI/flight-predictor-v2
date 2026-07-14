@@ -23,9 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.routes import predict, explain, health, history
+from app.routes import predict, explain, health, history, chat
 
 app.include_router(health.router)
+app.include_router(chat.router)
 app.include_router(predict.router)
 app.include_router(explain.router)
 app.include_router(history.router)
