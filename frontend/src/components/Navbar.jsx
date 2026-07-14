@@ -17,13 +17,24 @@ export default function Navbar() {
         padding: '0 24px',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <a href="#/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
         <span style={{ fontSize: 22 }}>✈️</span>
         <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.01em', color: '#fff' }}>
           FlightPrice<span className="gradient-text"> AI</span>
         </span>
-      </div>
+      </a>
 
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <a
+        href="#/app"
+        style={{
+          padding: '7px 14px', borderRadius: 8,
+          background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+          color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none',
+        }}
+      >
+        Open app
+      </a>
       <a
         href="https://github.com"
         target="_blank"
@@ -50,6 +61,7 @@ export default function Navbar() {
         </svg>
         GitHub
       </a>
+      </div>
     </motion.nav>
   )
 }

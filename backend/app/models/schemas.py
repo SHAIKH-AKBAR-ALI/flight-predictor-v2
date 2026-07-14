@@ -28,6 +28,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     session_id: str
     reply: str
+    offers: list[dict] = []
+    booking: dict | None = None
 
 
 class ExplainResponse(BaseModel):

@@ -7,7 +7,9 @@ from app.models.schemas import FlightInput
 from app.services import ml_service, groq_service, flight_search_service, supabase_service
 from app.services.flight_search_service import get_route_median as _get_route_median
 
-MODEL = "llama-3.3-70b-versatile"
+# ponytail: separate model from explain-flow's llama-3.3 so the agent has its own
+# Groq daily token quota; also a stronger tool-caller
+MODEL = "openai/gpt-oss-120b"
 MAX_TOOL_ITERATIONS = 5
 
 SYSTEM_PROMPT = (
@@ -27,6 +29,8 @@ SYSTEM_PROMPT = (
     "confirmation_id — always tell the user that ID. If the tool says "
     "awaiting_confirmation or NOT completed, the booking did NOT happen; never "
     "claim it did. "
+    "Reply in short plain text — no markdown tables or headers; the UI already "
+    "shows flight options as cards, so summarize rather than list every option. "
     "Valid cities: Delhi, Mumbai, Bangalore, Kolkata, Hyderabad, Chennai. "
     "Valid airlines: AirAsia, Air_India, GO_FIRST, Indigo, SpiceJet, Vistara."
 )
@@ -257,7 +261,15 @@ def _run_tool(name: str, args: dict, state: dict) -> str:
         return json.dumps({"error": str(e)})
 
 
-def chat(session_id: str, message: str) -> str:
+def _response(state: dict, reply: str) -> dict:
+    return {
+        "reply": reply,
+        "offers": state.get("last_offers", []),
+        "booking": state.get("booking"),
+    }
+
+
+def chat(session_id: str, message: str) -> dict:
     state = _load_session(session_id)
     history = state["messages"]
     history.append({"role": "user", "content": message})
@@ -274,7 +286,7 @@ def chat(session_id: str, message: str) -> str:
             msg = response.choices[0].message
             if not msg.tool_calls:
                 history.append({"role": "assistant", "content": msg.content})
-                return msg.content
+                return _response(state, msg.content)
             history.append(
                 {
                     "role": "assistant",
@@ -288,6 +300,6 @@ def chat(session_id: str, message: str) -> str:
 
         reply = "Sorry, I'm having trouble answering that right now. Could you rephrase?"
         history.append({"role": "assistant", "content": reply})
-        return reply
+        return _response(state, reply)
     finally:
         _save_session(session_id, state)
