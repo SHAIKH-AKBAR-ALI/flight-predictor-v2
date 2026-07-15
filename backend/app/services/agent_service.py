@@ -1,7 +1,15 @@
 import json
+import os
+from contextvars import ContextVar
+from typing import Literal, Optional
 from uuid import uuid4
 
 from fastapi import HTTPException
+from groq import BadRequestError, RateLimitError
+from langchain_core.tools import tool
+from langchain_groq import ChatGroq
+from langgraph.errors import GraphRecursionError
+from langgraph.prebuilt import create_react_agent
 
 from app.models.schemas import FlightInput
 from app.services import ml_service, groq_service, flight_search_service, supabase_service
@@ -21,8 +29,10 @@ SYSTEM_PROMPT = (
     "prices are above or below typical for the route. Baseline estimates are "
     "historical, never bookable prices. Refine searches based on user feedback "
     "(cheaper, other date/airline). "
-    "Booking flow: after the user picks a flight, call book_flight with its "
-    "flight_id, then collect passenger name and email, then show the booking "
+    "Booking flow: the moment the user picks a flight, IMMEDIATELY call "
+    "book_flight with its flight_id in that same turn — never just ask for "
+    "details without calling it first. Then collect passenger name and email, "
+    "then show the booking "
     "summary and ask the user to confirm. Only call book_flight with confirm=true "
     "after the user has explicitly confirmed in their own message. A booking is "
     "confirmed ONLY when book_flight returns status=confirmed with a "
@@ -36,6 +46,10 @@ SYSTEM_PROMPT = (
 )
 
 _EMPTY_STATE = {"messages": [], "last_offers": [], "booking": None}
+
+# Session state for the current request — set in chat(), read by tools.
+# ContextVar keeps module-level @tool functions per-request safe.
+_STATE: ContextVar[dict] = ContextVar("agent_session_state")
 
 
 def _load_session(session_id: str) -> dict:
@@ -95,11 +109,18 @@ def _explain_price(args: dict, state: dict) -> dict:
 
 
 def _search_flights(args: dict, state: dict) -> dict:
+    # new search = new journey — drop a finished (or abandoned) booking so its
+    # confirmation doesn't keep rendering in the UI
+    state["booking"] = None
     offers = flight_search_service.search(
         args["origin"], args["destination"], args["date"],
         airline=args.get("airline"), flight_class=args.get("flight_class") or "Economy",
     )
-    state["last_offers"] = offers
+    # model may search multiple dates/routes in one turn — accumulate so every
+    # offer it presents is selectable via book_flight
+    searches = state.get("_turn_searches", 0)
+    state["last_offers"] = offers if searches == 0 else state["last_offers"] + offers
+    state["_turn_searches"] = searches + 1
     return {"offers": offers, "note": "Live prices (mock inventory), sorted cheapest first."}
 
 
@@ -157,7 +178,9 @@ def _book_flight(args: dict, state: dict) -> dict:
                 "passenger_name": booking["passenger"]["name"],
                 "passenger_email": booking["passenger"]["email"],
             }).execute()
-            state["booking"] = {"stage": "confirmed", "confirmation_id": confirmation_id}
+            # keep offer + passenger so the UI can render the ticket
+            state["booking"] = {"stage": "confirmed", "confirmation_id": confirmation_id,
+                                "offer": booking["offer"], "passenger": booking["passenger"]}
             return {"status": "confirmed", "confirmation_id": confirmation_id,
                     "payment": "mock payment successful", "booking": summary}
         return {"status": "awaiting_confirmation", "summary": summary,
@@ -171,135 +194,144 @@ def _book_flight(args: dict, state: dict) -> dict:
                     "summary and ask the user to explicitly confirm before booking."}
 
 
-_TOOL_FNS = {
-    "estimate_baseline": _estimate_baseline,
-    "explain_price": _explain_price,
-    "search_flights": _search_flights,
-    "book_flight": _book_flight,
-}
-
-_FLIGHT_PARAMS = {
-    "type": "object",
-    "properties": {
-        "origin": {"type": "string", "description": "Source city"},
-        "destination": {"type": "string", "description": "Destination city"},
-        "airline": {"type": "string", "description": "Optional airline filter"},
-        "flight_class": {"type": "string", "enum": ["Economy", "Business"]},
-        "stops": {"type": "string", "enum": ["zero", "one", "two_or_more"]},
-        "days_left": {"type": "integer", "description": "Days until departure"},
-        "departure_time": {
-            "type": "string",
-            "enum": ["Early_Morning", "Morning", "Afternoon", "Evening", "Night", "Late_Night"],
-        },
-    },
-    "required": ["origin", "destination"],
-}
-
-TOOLS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "search_flights",
-            "description": "Search live flight offers for a route and date. Returns bookable options sorted by price.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "origin": {"type": "string", "description": "Source city"},
-                    "destination": {"type": "string", "description": "Destination city"},
-                    "date": {"type": "string", "description": "Travel date, YYYY-MM-DD"},
-                    "airline": {"type": "string", "description": "Optional airline filter"},
-                    "flight_class": {"type": "string", "enum": ["Economy", "Business"]},
-                },
-                "required": ["origin", "destination", "date"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "book_flight",
-            "description": (
-                "Book a flight from the latest search results. Multi-step: pass flight_id to select, "
-                "then passenger_name + passenger_email, then confirm=true ONLY after the user explicitly confirmed."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "flight_id": {"type": "string", "description": "flight_id from search_flights results"},
-                    "passenger_name": {"type": "string"},
-                    "passenger_email": {"type": "string"},
-                    "confirm": {"type": "boolean", "description": "true only after explicit user confirmation"},
-                },
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "estimate_baseline",
-            "description": "Get the typical/historical price for a route from the ML model. Not a live price.",
-            "parameters": _FLIGHT_PARAMS,
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "explain_price",
-            "description": "Explain WHY a route typically costs what it does (SHAP factors + plain-English explanation).",
-            "parameters": _FLIGHT_PARAMS,
-        },
-    },
-]
-
-
-def _run_tool(name: str, args: dict, state: dict) -> str:
+def _run_tool(fn, args: dict) -> str:
     try:
-        return json.dumps(_TOOL_FNS[name](args, state))
+        return json.dumps(fn(args, _STATE.get()))
     except HTTPException as e:
         return json.dumps({"error": e.detail})
     except Exception as e:
         return json.dumps({"error": str(e)})
 
 
-def _response(state: dict, reply: str) -> dict:
+# --- LangGraph tools: thin typed wrappers over the implementations above ---
+
+_DepartureTime = Literal["Early_Morning", "Morning", "Afternoon", "Evening", "Night", "Late_Night"]
+
+
+@tool
+def search_flights(origin: str, destination: str, date: str,
+                   airline: Optional[str] = None,
+                   flight_class: Optional[Literal["Economy", "Business"]] = None) -> str:
+    """Search live flight offers for a route and date (YYYY-MM-DD). Returns bookable options sorted by price."""
+    return _run_tool(_search_flights, {"origin": origin, "destination": destination, "date": date,
+                                       "airline": airline, "flight_class": flight_class})
+
+
+@tool
+def book_flight(flight_id: Optional[str] = None,
+                passenger_name: Optional[str] = None,
+                passenger_email: Optional[str] = None,
+                confirm: bool = False) -> str:
+    """Book a flight from the latest search results. Multi-step: pass flight_id to select,
+    then passenger_name + passenger_email, then confirm=true ONLY after the user explicitly confirmed."""
+    return _run_tool(_book_flight, {"flight_id": flight_id, "passenger_name": passenger_name,
+                                    "passenger_email": passenger_email, "confirm": confirm})
+
+
+@tool
+def estimate_baseline(origin: str, destination: str,
+                      airline: Optional[str] = None,
+                      flight_class: Optional[Literal["Economy", "Business"]] = None,
+                      stops: Optional[Literal["zero", "one", "two_or_more"]] = None,
+                      days_left: Optional[int] = None,
+                      departure_time: Optional[_DepartureTime] = None) -> str:
+    """Get the typical/historical price for a route from the ML model. Not a live price."""
+    return _run_tool(_estimate_baseline, {"origin": origin, "destination": destination, "airline": airline,
+                                          "flight_class": flight_class, "stops": stops,
+                                          "days_left": days_left, "departure_time": departure_time})
+
+
+@tool
+def explain_price(origin: str, destination: str,
+                  airline: Optional[str] = None,
+                  flight_class: Optional[Literal["Economy", "Business"]] = None,
+                  stops: Optional[Literal["zero", "one", "two_or_more"]] = None,
+                  days_left: Optional[int] = None,
+                  departure_time: Optional[_DepartureTime] = None) -> str:
+    """Explain WHY a route typically costs what it does (SHAP factors + plain-English explanation)."""
+    return _run_tool(_explain_price, {"origin": origin, "destination": destination, "airline": airline,
+                                      "flight_class": flight_class, "stops": stops,
+                                      "days_left": days_left, "departure_time": departure_time})
+
+
+# Primary key first; fall back to the other account when its quota is exhausted.
+_KEY_ENVS = ("GROQ_API_KEY_2", "GROQ_API_KEY")
+_graphs = {}
+
+
+def _get_graph(key_env: str):
+    if key_env not in _graphs:
+        # LangSmith tracing: just set LANGSMITH_TRACING=true + LANGSMITH_API_KEY in .env
+        _graphs[key_env] = create_react_agent(
+            ChatGroq(model=MODEL, temperature=0.3, max_retries=5, api_key=os.getenv(key_env)),
+            [search_flights, book_flight, estimate_baseline, explain_price],
+            prompt=SYSTEM_PROMPT,
+        )
+    return _graphs[key_env]
+
+
+def _invoke(history: list[dict]) -> str:
+    rate_limited = None
+    for key_env in _KEY_ENVS:
+        if not os.getenv(key_env):
+            continue
+        for attempt in (1, 2):
+            try:
+                result = _get_graph(key_env).invoke(
+                    {"messages": history},
+                    # each tool round = 2 graph steps (agent → tools)
+                    config={"recursion_limit": 2 * MAX_TOOL_ITERATIONS + 1},
+                )
+                content = result["messages"][-1].content
+                if isinstance(content, list):  # content-blocks form
+                    content = "".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in content)
+                return content
+            except GraphRecursionError:
+                return "Sorry, I'm having trouble answering that right now. Could you rephrase?"
+            except RateLimitError as e:
+                rate_limited = e
+                break  # this account's quota is done — try the next key
+            except BadRequestError as e:
+                # model occasionally emits malformed tool-call JSON (Groq 400
+                # tool_use_failed) — retry the turn once, then degrade gracefully
+                if "tool_use_failed" in str(e):
+                    if attempt == 1:
+                        continue
+                    return "Sorry, something went wrong on my side. Please try that again."
+                raise
+    raise rate_limited  # both accounts exhausted → route turns this into a 503
+
+
+def _response(state: dict, reply: str, searched: bool) -> dict:
+    # Only surface offers on the turn that ran a search — otherwise stale
+    # cards re-render after select/booking turns.
     return {
         "reply": reply,
-        "offers": state.get("last_offers", []),
+        "offers": state.get("last_offers", []) if searched else [],
         "booking": state.get("booking"),
     }
 
 
 def chat(session_id: str, message: str) -> dict:
     state = _load_session(session_id)
+    # Persist only user/assistant text turns (tool transcripts stay within a
+    # single graph run); also strips legacy sessions' raw tool messages.
+    state["messages"] = [
+        m for m in state["messages"]
+        if m.get("role") in ("user", "assistant")
+        and isinstance(m.get("content"), str) and m["content"]
+        and not m.get("tool_calls")
+    ]
+    offers_before = state.get("last_offers")  # search replaces the list, so identity change = searched
+    state["_turn_searches"] = 0
     history = state["messages"]
     history.append({"role": "user", "content": message})
-    client = groq_service._get_client()
 
+    token = _STATE.set(state)
     try:
-        for _ in range(MAX_TOOL_ITERATIONS):
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=[{"role": "system", "content": SYSTEM_PROMPT}] + history,
-                tools=TOOLS,
-                temperature=0.3,
-            )
-            msg = response.choices[0].message
-            if not msg.tool_calls:
-                history.append({"role": "assistant", "content": msg.content})
-                return _response(state, msg.content)
-            history.append(
-                {
-                    "role": "assistant",
-                    "content": msg.content,
-                    "tool_calls": [tc.model_dump() for tc in msg.tool_calls],
-                }
-            )
-            for tc in msg.tool_calls:
-                result = _run_tool(tc.function.name, json.loads(tc.function.arguments), state)
-                history.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-
-        reply = "Sorry, I'm having trouble answering that right now. Could you rephrase?"
+        reply = _invoke(history)
         history.append({"role": "assistant", "content": reply})
-        return _response(state, reply)
+        return _response(state, reply, state.get("last_offers") is not offers_before)
     finally:
+        _STATE.reset(token)
         _save_session(session_id, state)

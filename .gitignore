@@ -23,3 +23,7 @@ frontend/dist/
 
 # VS Code
 .vscode/
+
+# Playwright
+frontend/test-results/
+frontend/playwright-report/

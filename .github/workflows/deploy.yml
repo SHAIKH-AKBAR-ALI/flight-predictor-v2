@@ -22,13 +22,17 @@ jobs:
         run: |
           cd backend
           python -c "
-          from app.models.schemas import FlightInput
-          from app.routes import predict, explain, health, history
+          from app.models.schemas import FlightInput, ChatRequest, ChatResponse
+          from app.routes import predict, explain, health, history, chat
+          from app.services import agent_service, flight_search_service
           print('All modules imported successfully')
           "
 
   deploy:
     needs: test
+    # enable by setting repository variable DEPLOY_ENABLED=true once a
+    # deploy target (EC2/Railway) is live with its secrets configured
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
