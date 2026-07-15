@@ -6,11 +6,11 @@ networks:
 
 services:
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
-    volumes:
-      - ./data:/app/data
     env_file: ./backend/.env
     environment:
       # Override the relative path from .env with the correct in-container path
@@ -21,6 +21,9 @@ services:
 
   frontend:
     build: ./frontend
+    environment:
+      PORT: 80
+      BACKEND_HOST: backend:8000
     ports:
       - "80:80"
     depends_on:

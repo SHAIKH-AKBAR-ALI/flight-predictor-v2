@@ -2,10 +2,9 @@
 .env
 *.env
 
-# Model files - too large for git
-data/model_artifacts_v2.pkl
+# Old unoptimized model only — v2 pickle and the route CSV ARE committed,
+# Railway/Docker builds need them baked into the image
 data/model_artifacts.pkl
-data/*.csv
 
 # Python
 __pycache__/
