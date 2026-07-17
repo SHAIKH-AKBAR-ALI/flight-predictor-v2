@@ -3,8 +3,8 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer, LabelList,
 } from 'recharts'
 
-const RED = '#ef4444'
-const GREEN = '#22c55e'
+const RED = '#ff6b5e'
+const GREEN = '#4ade80'
 
 function CustomTooltip({ active, payload }) {
   if (!active || !payload?.length) return null
@@ -12,15 +12,15 @@ function CustomTooltip({ active, payload }) {
   const isPositive = value >= 0
   return (
     <div style={{
-      background: 'rgba(10,10,20,0.96)', border: '1px solid rgba(255,255,255,0.09)',
+      background: 'var(--ink)', border: '1px solid var(--line-strong)',
       borderRadius: 10, padding: '10px 16px', fontSize: 13,
       boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
     }}>
-      <p style={{ margin: '0 0 4px', color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>{name}</p>
+      <p style={{ margin: '0 0 4px', color: 'var(--dim)', fontWeight: 500 }}>{name}</p>
       <p style={{ margin: 0, fontWeight: 700, color: isPositive ? RED : GREEN }}>
         {isPositive ? '+' : ''}₹{value.toLocaleString('en-IN')}
       </p>
-      <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
+      <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--faint)' }}>
         {isPositive ? 'increases' : 'decreases'} price
       </p>
     </div>
@@ -63,15 +63,15 @@ export default function SHAPChart({ featureImportance }) {
       className="glass"
       style={{ marginBottom: 20, padding: '32px 24px 24px' }}
     >
-      <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.01em' }}>
+      <h3 style={{ fontFamily: 'var(--display)', fontSize: 17, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.01em' }}>
         Why does this flight cost this much?
       </h3>
       <div style={{ display: 'flex', gap: 20, marginBottom: 28, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 12, color: 'var(--dim)', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 10, height: 10, borderRadius: 2, background: RED, display: 'inline-block' }} />
           Price driver (increases cost)
         </span>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 12, color: 'var(--dim)', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 10, height: 10, borderRadius: 2, background: GREEN, display: 'inline-block' }} />
           Price reducer (lowers cost)
         </span>

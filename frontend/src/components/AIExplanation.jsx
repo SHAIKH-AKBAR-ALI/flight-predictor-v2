@@ -27,26 +27,22 @@ export default function AIExplanation({ text }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
       className="glass"
-      style={{
-        marginBottom: 20, padding: '32px 36px',
-        borderColor: 'rgba(124,58,237,0.15)',
-        boxShadow: '0 0 40px rgba(124,58,237,0.07)',
-      }}
+      style={{ marginBottom: 20, padding: '32px 36px' }}
     >
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 42, height: 42, borderRadius: 11, flexShrink: 0,
-          background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+          background: 'var(--amber)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 20, boxShadow: '0 4px 16px rgba(124,58,237,0.4)',
+          fontSize: 20,
         }}>
           🤖
         </div>
         <div>
-          <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>AI Explanation</p>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 700, fontFamily: 'var(--display)' }}>AI Explanation</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 3 }}>
-            <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--dim)' }}>
               Llama 3.3 70B
             </p>
             <span style={{
@@ -67,8 +63,8 @@ export default function AIExplanation({ text }) {
             animate={{ opacity: 1, scale: 1 }}
             style={{
               marginLeft: 'auto', fontSize: 11, padding: '4px 10px', borderRadius: 100,
-              background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)',
-              color: '#86efac', fontWeight: 600, whiteSpace: 'nowrap',
+              background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)',
+              color: 'var(--ok)', fontWeight: 600, whiteSpace: 'nowrap',
             }}
           >
             ✓ Done
@@ -79,7 +75,7 @@ export default function AIExplanation({ text }) {
       {/* Typewriter text */}
       <p style={{
         margin: 0, fontSize: 15, lineHeight: 1.75,
-        color: 'rgba(255,255,255,0.78)', fontWeight: 400,
+        color: 'var(--paper)', fontWeight: 400,
       }}>
         {displayed}
         {!done && (
@@ -88,7 +84,7 @@ export default function AIExplanation({ text }) {
             transition={{ duration: 0.65, repeat: Infinity }}
             style={{
               display: 'inline-block', width: 2, height: '1.1em',
-              background: '#7c3aed', marginLeft: 2,
+              background: 'var(--amber)', marginLeft: 2,
               verticalAlign: 'text-bottom', borderRadius: 1,
             }}
           />

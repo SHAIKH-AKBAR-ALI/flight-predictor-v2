@@ -71,16 +71,16 @@ export default function AppPage() {
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 16px 0' }}>
         <div role="tablist" aria-label="App mode" style={{
           display: 'inline-flex', gap: 4, padding: 4, borderRadius: 12, marginBottom: 24,
-          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--panel-2)', border: '1px solid var(--line)',
         }}>
           {TABS.map(t => (
             <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)}
               style={{
                 padding: '9px 18px', borderRadius: 9, border: 'none', cursor: 'pointer',
-                fontSize: 13.5, fontWeight: 600, fontFamily: 'Inter, sans-serif', transition: 'all 0.2s',
+                fontSize: 13.5, fontWeight: 600, fontFamily: 'var(--body)', transition: 'all 0.2s',
                 ...(tab === t.id
-                  ? { background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff' }
-                  : { background: 'transparent', color: 'rgba(255,255,255,0.5)' }),
+                  ? { background: 'var(--amber)', color: 'var(--amber-ink)' }
+                  : { background: 'transparent', color: 'var(--dim)' }),
               }}>
               {t.label}
             </button>
@@ -91,7 +91,7 @@ export default function AppPage() {
       {tab === 'agent' && (
         <section style={{ maxWidth: 860, margin: '0 auto', padding: '0 16px 80px' }}>
           <ChatPanel />
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 12, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: 'var(--faint)', marginTop: 12, lineHeight: 1.5 }}>
             Live prices come from a mock inventory; bookings are simulated — no payment, no real ticket.
             Typical-price comparisons use a model trained on historical fares.
           </p>
@@ -101,15 +101,15 @@ export default function AppPage() {
       {tab === 'estimate' && (
         <>
           <section id="predict" style={{ padding: '0 16px 40px', maxWidth: 860, margin: '0 auto' }}>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 18, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: 'var(--dim)', marginBottom: 18, lineHeight: 1.6 }}>
               Estimates what a route typically costs, based on historical fare data — not a live bookable price.
             </p>
             <PredictionForm onPredict={handlePredict} onExplain={handleExplain} loading={loading} />
             {error && (
               <div style={{
                 marginTop: 16, padding: '12px 18px',
-                background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
-                borderRadius: 10, color: '#fca5a5', fontSize: 14, lineHeight: 1.5,
+                background: 'rgba(255,107,94,0.08)', border: '1px solid rgba(255,107,94,0.3)',
+                borderRadius: 10, color: 'var(--hot)', fontSize: 14, lineHeight: 1.5,
               }}>
                 {error}
               </div>

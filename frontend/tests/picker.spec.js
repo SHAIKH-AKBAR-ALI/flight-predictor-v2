@@ -37,5 +37,5 @@ test('trip picker searches with clean values', async ({ page }) => {
   const confirmReply = page.waitForResponse(r => r.url().includes('/chat') && r.status() === 200, { timeout: 180000 })
   await page.getByTestId('confirm-booking').click()
   await confirmReply
-  await expect(page.getByTestId('booking-confirmed')).toContainText(/ID FL[0-9A-F]{8}/)
+  await expect(page.getByTestId('booking-confirmed')).toContainText(/FL[0-9A-F]{8}/)
 })

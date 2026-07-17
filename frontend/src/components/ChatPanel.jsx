@@ -4,11 +4,9 @@ import api from '../api/client'
 
 const CITIES = ['Delhi', 'Mumbai', 'Bangalore', 'Kolkata', 'Hyderabad', 'Chennai']
 
-const AIRLINE_ICONS = {
-  AirAsia: '🔴', Air_India: '🇮🇳', GO_FIRST: '🔵', Indigo: '🟣', SpiceJet: '🌶️', Vistara: '🟡',
-}
-
 const IATA = { Delhi: 'DEL', Mumbai: 'BOM', Bangalore: 'BLR', Kolkata: 'CCU', Hyderabad: 'HYD', Chennai: 'MAA' }
+
+const mono = { fontFamily: 'var(--mono)' }
 
 function Barcode({ seed }) {
   const bars = []
@@ -20,7 +18,7 @@ function Barcode({ seed }) {
   }
   return (
     <svg width={x} height="40" style={{ display: 'block' }} aria-hidden="true">
-      {bars.map((b, i) => <rect key={i} x={b.x} width={b.w} height="40" fill="#1a1a2e" />)}
+      {bars.map((b, i) => <rect key={i} x={b.x} width={b.w} height="40" fill="#101a30" />)}
     </svg>
   )
 }
@@ -30,8 +28,8 @@ function Ticket({ booking }) {
   const n = parseInt(confirmation_id.slice(2), 16)
   const seat = `${(n % 30) + 1}${'ABCDEF'[n % 6]}`
   const gate = `${(n % 22) + 1}`
-  const label = { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: '#8a8aa3', fontWeight: 600 }
-  const value = { fontSize: 14, fontWeight: 700, color: '#1a1a2e' }
+  const label = { ...mono, fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: '#7c86a0' }
+  const value = { fontSize: 14, fontWeight: 700, color: '#101a30' }
 
   return (
     <motion.div
@@ -42,7 +40,7 @@ function Ticket({ booking }) {
         // flexShrink 0: overflow:hidden zeroes the flex min-height floor,
         // letting the scroll pane squash the ticket to 0px tall
         maxWidth: 480, borderRadius: 14, overflow: 'hidden', position: 'relative', flexShrink: 0,
-        background: '#f7f7fb', color: '#1a1a2e', fontFamily: 'Inter, sans-serif',
+        background: '#f4f6fb', color: '#101a30', fontFamily: 'var(--body)',
         boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
       }}
     >
@@ -51,8 +49,8 @@ function Ticket({ booking }) {
         pointerEvents: 'none', zIndex: 1,
       }}>
         <span style={{
-          transform: 'rotate(-18deg)', fontSize: 26, fontWeight: 800, letterSpacing: 4,
-          color: 'rgba(124,58,237,0.13)', border: '3px solid rgba(124,58,237,0.13)',
+          ...mono, transform: 'rotate(-18deg)', fontSize: 24, fontWeight: 700, letterSpacing: 4,
+          color: 'rgba(16,26,48,0.10)', border: '3px solid rgba(16,26,48,0.10)',
           padding: '4px 18px', borderRadius: 8, whiteSpace: 'nowrap',
         }}>
           MOCK TICKET · DEMO
@@ -61,24 +59,24 @@ function Ticket({ booking }) {
 
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '12px 18px', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff',
+        padding: '12px 18px', background: 'var(--amber)', color: 'var(--amber-ink)',
       }}>
         <span style={{ fontWeight: 800, fontSize: 14, letterSpacing: 1 }}>
-          {AIRLINE_ICONS[offer.airline] || '✈️'} {offer.airline.replace('_', ' ').toUpperCase()}
+          ✈ {offer.airline.replace('_', ' ').toUpperCase()}
         </span>
-        <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.85 }}>BOARDING PASS · {offer.flight_id}</span>
+        <span style={{ ...mono, fontSize: 11, fontWeight: 700 }}>BOARDING PASS · {offer.flight_id}</span>
       </div>
 
       <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div>
-            <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1 }}>{IATA[offer.origin] || '???'}</div>
-            <div style={{ fontSize: 11, color: '#8a8aa3' }}>{offer.origin}</div>
+            <div style={{ ...mono, fontSize: 30, fontWeight: 700, lineHeight: 1 }}>{IATA[offer.origin] || '???'}</div>
+            <div style={{ fontSize: 11, color: '#7c86a0' }}>{offer.origin}</div>
           </div>
-          <div style={{ flex: 1, textAlign: 'center', color: '#7c3aed', fontSize: 18 }}>✈ ─────</div>
+          <div aria-hidden="true" style={{ flex: 1, textAlign: 'center', color: '#c99420', fontSize: 18 }}>✈ ─────</div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1 }}>{IATA[offer.destination] || '???'}</div>
-            <div style={{ fontSize: 11, color: '#8a8aa3' }}>{offer.destination}</div>
+            <div style={{ ...mono, fontSize: 30, fontWeight: 700, lineHeight: 1 }}>{IATA[offer.destination] || '???'}</div>
+            <div style={{ fontSize: 11, color: '#7c86a0' }}>{offer.destination}</div>
           </div>
         </div>
 
@@ -98,12 +96,12 @@ function Ticket({ booking }) {
       </div>
 
       <div style={{
-        borderTop: '2px dashed #c9c9dd', padding: '12px 18px',
+        borderTop: '2px dashed #c3cadd', padding: '12px 18px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
       }}>
         <div>
           <div style={label}>Confirmation ID</div>
-          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: 2 }}>ID {confirmation_id}</div>
+          <div style={{ ...mono, fontSize: 15, fontWeight: 700, letterSpacing: 2 }}>{confirmation_id}</div>
         </div>
         <Barcode seed={confirmation_id} />
       </div>
@@ -116,40 +114,28 @@ function TripPicker({ onSearch, disabled }) {
   const [to, setTo] = useState('')
   const [date, setDate] = useState('')
   const today = new Date().toISOString().slice(0, 10)
-
-  const selectStyle = {
-    padding: '10px 12px', borderRadius: 10, outline: 'none',
-    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
-    color: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif',
-  }
+  const ready = from && to && date
 
   return (
     <form
       data-testid="trip-picker"
       onSubmit={e => { e.preventDefault(); onSearch(`Find flights from ${from} to ${to} on ${date}`) }}
-      style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10, maxWidth: '95%' }}
+      style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12, maxWidth: '95%' }}
     >
-      <select value={from} onChange={e => setFrom(e.target.value)} required aria-label="From city" style={selectStyle}>
+      <select className="styled-select" value={from} onChange={e => setFrom(e.target.value)} required
+        aria-label="From city" style={{ width: 'auto', flex: '1 1 120px' }}>
         <option value="" disabled>From</option>
-        {CITIES.map(c => <option key={c} value={c} disabled={c === to} style={{ color: '#000' }}>{c}</option>)}
+        {CITIES.map(c => <option key={c} value={c} disabled={c === to}>{c}</option>)}
       </select>
-      <select value={to} onChange={e => setTo(e.target.value)} required aria-label="To city" style={selectStyle}>
+      <select className="styled-select" value={to} onChange={e => setTo(e.target.value)} required
+        aria-label="To city" style={{ width: 'auto', flex: '1 1 120px' }}>
         <option value="" disabled>To</option>
-        {CITIES.map(c => <option key={c} value={c} disabled={c === from} style={{ color: '#000' }}>{c}</option>)}
+        {CITIES.map(c => <option key={c} value={c} disabled={c === from}>{c}</option>)}
       </select>
-      <input type="date" value={date} min={today} onChange={e => setDate(e.target.value)} required
-        aria-label="Travel date" style={{ ...selectStyle, colorScheme: 'dark' }} />
-      <button
-        type="submit"
-        disabled={disabled || !from || !to || !date}
-        style={{
-          padding: '10px 18px', borderRadius: 10, border: 'none',
-          background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff',
-          fontSize: 13, fontWeight: 600,
-          cursor: disabled || !from || !to || !date ? 'default' : 'pointer',
-          opacity: disabled || !from || !to || !date ? 0.5 : 1,
-        }}
-      >
+      <input type="date" className="styled-input" value={date} min={today} onChange={e => setDate(e.target.value)} required
+        aria-label="Travel date" style={{ colorScheme: 'dark', width: 'auto', flex: '1 1 140px' }} />
+      <button type="submit" className="btn-amber" disabled={disabled || !ready}
+        style={{ padding: '10px 20px', fontSize: 13 }}>
         Search
       </button>
     </form>
@@ -160,35 +146,20 @@ function PassengerForm({ onSubmit, disabled }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
 
-  const fieldStyle = {
-    padding: '10px 12px', borderRadius: 10, outline: 'none',
-    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
-    color: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif',
-  }
-
   return (
     <form
       data-testid="passenger-form"
       onSubmit={e => { e.preventDefault(); onSubmit(`Passenger is ${name.trim()}, email ${email.trim()}`) }}
       className="glass"
-      style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 14, borderRadius: 12, maxWidth: '95%' }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 16, borderRadius: 12, maxWidth: '95%', flexShrink: 0 }}
     >
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>Passenger details</div>
-      <input value={name} onChange={e => setName(e.target.value)} required minLength={2}
-        placeholder="Full name" aria-label="Passenger full name" style={fieldStyle} />
-      <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-        placeholder="Email" aria-label="Passenger email" style={fieldStyle} />
-      <button
-        type="submit"
-        disabled={disabled || !name.trim() || !email.trim()}
-        style={{
-          padding: '10px 18px', borderRadius: 10, border: 'none',
-          background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff',
-          fontSize: 13, fontWeight: 600,
-          cursor: disabled ? 'default' : 'pointer',
-          opacity: disabled || !name.trim() || !email.trim() ? 0.5 : 1,
-        }}
-      >
+      <div className="mono-label" style={{ color: 'var(--amber)' }}>PASSENGER DETAILS</div>
+      <input className="styled-input" value={name} onChange={e => setName(e.target.value)} required minLength={2}
+        placeholder="Full name" aria-label="Passenger full name" />
+      <input className="styled-input" type="email" value={email} onChange={e => setEmail(e.target.value)} required
+        placeholder="Email" aria-label="Passenger email" />
+      <button type="submit" className="btn-amber" disabled={disabled || !name.trim() || !email.trim()}
+        style={{ padding: '10px 20px', fontSize: 13 }}>
         Continue
       </button>
     </form>
@@ -199,28 +170,23 @@ function OfferCard({ offer, onSelect, disabled }) {
   return (
     <div className="glass" data-testid="offer-card" style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      gap: 12, padding: '12px 16px', borderRadius: 12,
+      gap: 12, padding: '12px 16px', borderRadius: 12, background: 'var(--panel-2)',
     }}>
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#fff' }}>
-          {AIRLINE_ICONS[offer.airline] || '✈️'} {offer.airline.replace('_', ' ')}{' '}
-          <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{offer.flight_id}</span>
+        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--paper)' }}>
+          {offer.airline.replace('_', ' ')}{' '}
+          <span style={{ ...mono, color: 'var(--faint)', fontWeight: 400, fontSize: 12 }}>{offer.flight_id}</span>
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
+        <div style={{ fontSize: 12, color: 'var(--dim)', marginTop: 3 }}>
           {offer.departure_time.replace('_', ' ')} · {offer.stops === 'zero' ? 'non-stop' : offer.stops === 'one' ? '1 stop' : '2+ stops'} · {offer.duration_hours}h · {offer.seats_left} seats left
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        <span style={{ fontWeight: 700, fontSize: 15, color: '#fff' }}>₹{offer.price_inr.toLocaleString('en-IN')}</span>
-        <button
-          onClick={() => onSelect(offer)}
-          disabled={disabled}
-          style={{
-            padding: '7px 14px', borderRadius: 8, border: 'none', cursor: disabled ? 'default' : 'pointer',
-            background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff',
-            fontSize: 13, fontWeight: 600, opacity: disabled ? 0.5 : 1,
-          }}
-        >
+        <span style={{ ...mono, fontWeight: 700, fontSize: 15, color: 'var(--amber)' }}>
+          ₹{offer.price_inr.toLocaleString('en-IN')}
+        </span>
+        <button onClick={() => onSelect(offer)} disabled={disabled} className="btn-amber"
+          style={{ padding: '7px 14px', fontSize: 13 }}>
           Select
         </button>
       </div>
@@ -274,7 +240,15 @@ export default function ChatPanel() {
   const confirmed = booking?.stage === 'confirmed'
 
   return (
-    <div className="glass" style={{ display: 'flex', flexDirection: 'column', height: 'min(72vh, 720px)' }}>
+    <div className="glass" style={{ display: 'flex', flexDirection: 'column', height: 'min(72vh, 720px)', overflow: 'hidden' }}>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '10px 18px', borderBottom: '1px solid var(--line)', background: 'var(--panel-2)',
+      }}>
+        <span className="mono-label" style={{ color: 'var(--amber)' }}>FLIGHT DESK</span>
+        <span className="mono-label"><span className="blink" style={{ color: 'var(--ok)' }}>●</span> AGENT ONLINE</span>
+      </div>
+
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {messages.map((m, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
@@ -282,8 +256,8 @@ export default function ChatPanel() {
               maxWidth: '85%', padding: '10px 14px', borderRadius: 14, fontSize: 14, lineHeight: 1.55,
               whiteSpace: 'pre-wrap', wordBreak: 'break-word',
               ...(m.role === 'user'
-                ? { marginLeft: 'auto', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff', borderBottomRightRadius: 4 }
-                : { marginRight: 'auto', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', borderBottomLeftRadius: 4 }),
+                ? { marginLeft: 'auto', background: 'var(--amber)', color: 'var(--amber-ink)', fontWeight: 500, borderBottomRightRadius: 4 }
+                : { marginRight: 'auto', background: 'var(--ink-2)', border: '1px solid var(--line)', color: 'var(--paper)', borderBottomLeftRadius: 4 }),
             }}>
               {m.text}
             </div>
@@ -311,8 +285,8 @@ export default function ChatPanel() {
             onClick={() => send('Yes, I confirm the booking')}
             style={{
               alignSelf: 'flex-start', padding: '11px 20px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg, #16a34a, #15803d)', color: '#fff',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              background: 'var(--ok)', color: '#052e12',
+              fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--body)',
             }}
           >
             ✓ Confirm booking
@@ -323,12 +297,12 @@ export default function ChatPanel() {
           <Ticket booking={booking} />
         ) : (
           <div data-testid="booking-confirmed" style={{
-            padding: '14px 18px', borderRadius: 12,
-            background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
-            color: '#86efac', fontSize: 14, fontWeight: 600,
+            padding: '14px 18px', borderRadius: 12, flexShrink: 0,
+            background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.3)',
+            color: 'var(--ok)', fontSize: 14, fontWeight: 600,
           }}>
             ✅ Booking confirmed — ID {booking.confirmation_id}
-            <div style={{ fontWeight: 400, fontSize: 12, color: 'rgba(134,239,172,0.7)', marginTop: 4 }}>
+            <div style={{ fontWeight: 400, fontSize: 12, opacity: 0.75, marginTop: 4 }}>
               Mock booking for demo purposes. No real ticket or payment.
             </div>
           </div>
@@ -340,7 +314,7 @@ export default function ChatPanel() {
               <motion.span key={i}
                 animate={{ opacity: [0.25, 1, 0.25] }}
                 transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.25 }}
-                style={{ width: 6, height: 6, borderRadius: '50%', background: '#a78bfa' }} />
+                style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--amber)' }} />
             ))}
           </div>
         )}
@@ -348,29 +322,18 @@ export default function ChatPanel() {
 
       <form
         onSubmit={e => { e.preventDefault(); send(input) }}
-        style={{ display: 'flex', gap: 10, padding: 16, borderTop: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ display: 'flex', gap: 10, padding: 16, borderTop: '1px solid var(--line)' }}
       >
         <input
+          className="styled-input"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder='Try "find flights Delhi to Mumbai next Friday"'
           aria-label="Message the flight assistant"
-          style={{
-            flex: 1, padding: '12px 16px', borderRadius: 10, outline: 'none',
-            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
-            color: '#fff', fontSize: 14, fontFamily: 'Inter, sans-serif',
-          }}
+          style={{ flex: 1, padding: '12px 16px' }}
         />
-        <button
-          type="submit"
-          disabled={busy || !input.trim()}
-          style={{
-            padding: '12px 22px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff',
-            fontSize: 14, fontWeight: 600, cursor: busy ? 'default' : 'pointer',
-            opacity: busy || !input.trim() ? 0.5 : 1,
-          }}
-        >
+        <button type="submit" className="btn-amber" disabled={busy || !input.trim()}
+          style={{ padding: '12px 22px' }}>
           Send
         </button>
       </form>

@@ -2,126 +2,204 @@
 @tailwind components;
 @tailwind utilities;
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* ── Night-departures token system ─────────────────────────────── */
+:root {
+  --ink: #0a1020;          /* night tarmac */
+  --ink-2: #0d1526;
+  --panel: #101a30;
+  --panel-2: #0c1322;      /* board rows */
+  --line: rgba(208, 222, 255, 0.09);
+  --line-strong: rgba(208, 222, 255, 0.16);
+  --amber: #ffb324;        /* split-flap amber */
+  --amber-ink: #241500;    /* text on amber */
+  --amber-dim: rgba(255, 179, 36, 0.13);
+  --paper: #e9eef8;
+  --dim: #97a1b8;
+  --faint: #5c6780;
+  --ok: #4ade80;           /* below typical */
+  --hot: #ff6b5e;          /* above typical */
+  --display: 'Bricolage Grotesque', 'Inter', sans-serif;
+  --mono: 'B612 Mono', ui-monospace, monospace;
+  --body: 'Inter', sans-serif;
 }
 
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-  background: #0a0a0f;
-  font-family: 'Inter', sans-serif;
-  color: #fff;
+  background: var(--ink);
+  font-family: var(--body);
+  color: var(--paper);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Ambient background blobs */
+/* Runway edge-lights: two faint amber glows low on the page */
 body::before {
   content: '';
-  position: fixed;
-  top: -20%;
-  left: -10%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
+  position: fixed; inset: auto -10% -30% -10%; height: 55%;
+  background:
+    radial-gradient(ellipse 40% 55% at 18% 100%, rgba(255, 179, 36, 0.07), transparent 70%),
+    radial-gradient(ellipse 40% 55% at 82% 100%, rgba(255, 179, 36, 0.05), transparent 70%);
   pointer-events: none;
-  z-index: 0;
 }
 
-body::after {
-  content: '';
-  position: fixed;
-  bottom: -20%;
-  right: -10%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
+#root { position: relative; z-index: 1; }
 
-#root {
-  position: relative;
-  z-index: 1;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 3px; }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #0a0a0f; }
-::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 3px; }
+::selection { background: var(--amber); color: var(--amber-ink); }
 
-/* Reusable utility classes */
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* ── Surfaces ──────────────────────────────────────────────────── */
+/* .glass kept as the shared surface class so components don't all change */
 .glass {
-  background: rgba(255, 255, 255, 0.035);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.gradient-text { color: var(--amber); }
+
+/* Mono utility labels — airport signage voice */
+.mono-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
 }
 
-/* Form controls */
-.styled-select {
-  appearance: none;
-  -webkit-appearance: none;
-  background: rgba(255, 255, 255, 0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
-  border: 1px solid rgba(255, 255, 255, 0.09);
+/* ── Buttons ───────────────────────────────────────────────────── */
+.btn-amber, .btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 10px; text-decoration: none; cursor: pointer;
+  font-family: var(--body); font-weight: 700; font-size: 14px;
+  padding: 13px 24px; border: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.btn-amber { background: var(--amber); color: var(--amber-ink); box-shadow: 0 6px 28px rgba(255, 179, 36, 0.25); }
+.btn-amber:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 34px rgba(255, 179, 36, 0.35); }
+.btn-ghost { background: transparent; border: 1px solid var(--line-strong); color: var(--dim); font-weight: 500; }
+.btn-ghost:hover:not(:disabled) { border-color: var(--amber); color: var(--paper); }
+.btn-amber:disabled, .btn-ghost:disabled { opacity: 0.45; cursor: default; }
+
+/* ── Split-flap board ──────────────────────────────────────────── */
+@keyframes flap {
+  0% { transform: rotateX(-88deg); opacity: 0.2; }
+  100% { transform: rotateX(0); opacity: 1; }
+}
+.flap-char {
+  display: inline-block;
+  animation: flap 0.32s cubic-bezier(0.3, 0.9, 0.4, 1) both;
+  transform-origin: center 55%;
+  min-width: 0.62em;
+}
+.board {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  font-family: var(--mono);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+.board-row {
+  display: grid;
+  grid-template-columns: 5.2em 1fr 5.4em 6.6em;
+  gap: 10px; align-items: center;
+  padding: 13px 18px;
+  border-top: 1px solid rgba(208, 222, 255, 0.05);
+  font-size: 13px; letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* ── FAQ (native <details>) ────────────────────────────────────── */
+.faq {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.faq + .faq { margin-top: 10px; }
+.faq summary {
+  list-style: none; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 18px 22px;
+  font-weight: 600; font-size: 15px; color: var(--paper);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: '+';
+  font-family: var(--mono); font-size: 18px; color: var(--amber);
+  transition: transform 0.2s ease; flex-shrink: 0;
+}
+.faq[open] summary::after { transform: rotate(45deg); }
+.faq p {
+  padding: 0 22px 20px;
+  font-size: 14px; line-height: 1.7; color: var(--dim);
+}
+
+/* ── Form controls ─────────────────────────────────────────────── */
+.styled-select, .styled-input {
+  appearance: none; -webkit-appearance: none;
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
-  color: #fff;
-  padding: 11px 36px 11px 14px;
+  color: var(--paper);
+  padding: 11px 14px;
   width: 100%;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  cursor: pointer;
+  font-family: var(--body); font-size: 14px;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s;
 }
-
-.styled-select:focus {
-  border-color: rgba(124, 58, 237, 0.6);
-  background-color: rgba(124, 58, 237, 0.06);
+.styled-select {
+  cursor: pointer;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2397a1b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
 }
+.styled-select:focus, .styled-input:focus { border-color: var(--amber); }
+.styled-select option { background: var(--ink-2); color: var(--paper); }
+.styled-input::placeholder { color: var(--faint); }
 
-.styled-select option {
-  background: #151520;
-  color: #fff;
-}
-
-/* Range slider */
 input[type='range'] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px;
+  background: var(--line-strong);
+  border-radius: 2px; outline: none; cursor: pointer;
 }
-
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  background: linear-gradient(135deg, #7c3aed, #2563eb);
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+  width: 18px; height: 18px;
+  background: var(--amber);
+  border-radius: 50%; cursor: pointer;
+  box-shadow: 0 0 12px rgba(255, 179, 36, 0.5);
+}
+input[type='range']::-moz-range-thumb {
+  width: 18px; height: 18px;
+  background: var(--amber);
+  border-radius: 50%; cursor: pointer; border: none;
+  box-shadow: 0 0 12px rgba(255, 179, 36, 0.5);
 }
 
-input[type='range']::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  background: linear-gradient(135deg, #7c3aed, #2563eb);
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+/* ── Route radar arcs ──────────────────────────────────────────── */
+@keyframes dash-flow { to { stroke-dashoffset: -22; } }
+.radar-arc {
+  stroke: var(--amber);
+  stroke-dasharray: 3 8;
+  animation: dash-flow 2.2s linear infinite;
+}
+
+@keyframes blink { 50% { opacity: 0.25; } }
+.blink { animation: blink 1.4s step-end infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

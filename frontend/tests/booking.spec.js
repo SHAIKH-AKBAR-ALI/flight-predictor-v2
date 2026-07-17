@@ -18,7 +18,7 @@ async function say(page, text) {
 
 test('landing page links into the app', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByText('knows what a fair price is.')).toBeVisible()
+  await expect(page.getByText('what a fair fare is.')).toBeVisible()
   await page.getByTestId('cta-app').click()
   await expect(chatInput(page)).toBeVisible()
 })
@@ -26,7 +26,7 @@ test('landing page links into the app', async ({ page }) => {
 test('predict tab returns a historical estimate', async ({ page }) => {
   await page.goto('/#/app')
   await page.getByRole('tab', { name: /Price estimate/ }).click()
-  await page.getByRole('button', { name: /Predict Price/i }).click()
+  await page.getByRole('button', { name: /Estimate typical fare/i }).click()
   await expect(page.locator('#result')).toContainText('₹', { timeout: 30000 })
 })
 
@@ -45,5 +45,5 @@ test('search, pick a flight, book, get confirmation', async ({ page }) => {
   await say(page, 'passenger is Akbar Ali, email akbar@example.com')
   await say(page, 'yes, I confirm the booking')
 
-  await expect(page.getByTestId('booking-confirmed')).toContainText(/ID FL[0-9A-F]{8}/)
+  await expect(page.getByTestId('booking-confirmed')).toContainText(/FL[0-9A-F]{8}/)
 })

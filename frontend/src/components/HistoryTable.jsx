@@ -10,11 +10,9 @@ function formatTime(iso) {
 }
 
 const TH = ({ children }) => (
-  <th style={{
+  <th className="mono-label" style={{
     padding: '13px 18px', textAlign: 'left',
-    fontSize: 10, color: 'rgba(255,255,255,0.35)',
-    fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-    borderBottom: '1px solid rgba(255,255,255,0.06)',
+    borderBottom: '1px solid var(--line)',
     whiteSpace: 'nowrap',
   }}>
     {children}
@@ -24,8 +22,8 @@ const TH = ({ children }) => (
 const TD = ({ children, style }) => (
   <td style={{
     padding: '13px 18px', fontSize: 13,
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
-    color: 'rgba(255,255,255,0.75)', ...style,
+    borderBottom: '1px solid rgba(208,222,255,0.04)',
+    color: 'var(--dim)', ...style,
   }}>
     {children}
   </td>
@@ -36,9 +34,9 @@ function ClassBadge({ value }) {
   return (
     <span style={{
       padding: '3px 10px', borderRadius: 100, fontSize: 11, fontWeight: 600,
-      background: isBiz ? 'rgba(124,58,237,0.18)' : 'rgba(37,99,235,0.15)',
-      color: isBiz ? '#c4b5fd' : '#93c5fd',
-      border: `1px solid ${isBiz ? 'rgba(124,58,237,0.28)' : 'rgba(37,99,235,0.22)'}`,
+      background: isBiz ? 'var(--amber-dim)' : 'var(--ink-2)',
+      color: isBiz ? 'var(--amber)' : 'var(--dim)',
+      border: `1px solid ${isBiz ? 'rgba(255,179,36,0.3)' : 'var(--line-strong)'}`,
       whiteSpace: 'nowrap',
     }}>
       {value}
@@ -51,7 +49,7 @@ function Sparkline({ prices, highlightIdx }) {
   if (prices.length < 2) {
     return (
       <svg width={w} height={h}>
-        <circle cx={w / 2} cy={h / 2} r={3} fill="#7c3aed" opacity={0.7} />
+        <circle cx={w / 2} cy={h / 2} r={3} fill="#ffb324" opacity={0.7} />
       </svg>
     )
   }
@@ -74,12 +72,12 @@ function Sparkline({ prices, highlightIdx }) {
       <polyline
         points={polyline}
         fill="none"
-        stroke="rgba(124,58,237,0.35)"
+        stroke="rgba(255,179,36,0.35)"
         strokeWidth="1.5"
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      <circle cx={hx} cy={hy} r={3} fill="#7c3aed" opacity={0.9} />
+      <circle cx={hx} cy={hy} r={3} fill="#ffb324" opacity={0.9} />
     </svg>
   )
 }
@@ -95,17 +93,17 @@ export default function HistoryTable({ history }) {
       transition={{ duration: 0.7 }}
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.01em' }}>Recent Predictions</h2>
+        <h2 style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 800, letterSpacing: '-0.01em' }}>Recent estimates</h2>
         {history.length > 0 && (
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>last {history.length}</span>
+          <span style={{ fontSize: 12, color: 'var(--faint)' }}>last {history.length}</span>
         )}
       </div>
-      <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, marginBottom: 20 }}>
-        Your prediction history from Supabase
+      <p style={{ color: 'var(--faint)', fontSize: 13, marginBottom: 20 }}>
+        Every estimate is logged to Supabase — this is the live table.
       </p>
 
       {!history.length ? (
-        <div className="glass" style={{ padding: '56px 24px', textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 14 }}>
+        <div className="glass" style={{ padding: '56px 24px', textAlign: 'center', color: 'var(--faint)', fontSize: 14 }}>
           No predictions yet. Make your first prediction above. ✈️
         </div>
       ) : (
@@ -125,8 +123,8 @@ export default function HistoryTable({ history }) {
             <tbody>
               {history.map((row, i) => {
                 const isOdd = i % 2 !== 0
-                const rowBg = isOdd ? 'rgba(255,255,255,0.018)' : 'transparent'
-                const hoverBg = 'rgba(124,58,237,0.07)'
+                const rowBg = isOdd ? 'rgba(208,222,255,0.015)' : 'transparent'
+                const hoverBg = 'rgba(255,179,36,0.06)'
                 const highlightIdx = chronoPrices.length - 1 - i
 
                 return (
@@ -139,24 +137,24 @@ export default function HistoryTable({ history }) {
                     onMouseEnter={e => e.currentTarget.style.background = hoverBg}
                     onMouseLeave={e => e.currentTarget.style.background = rowBg}
                   >
-                    <TD style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, whiteSpace: 'nowrap' }}>
+                    <TD style={{ color: 'var(--faint)', fontSize: 12, whiteSpace: 'nowrap' }}>
                       {formatTime(row.created_at)}
                     </TD>
                     <TD>
-                      <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>{row.source_city}</span>
-                      <span style={{ color: 'rgba(255,255,255,0.25)', margin: '0 7px', fontSize: 12 }}>→</span>
-                      <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>{row.destination_city}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--paper)' }}>{row.source_city}</span>
+                      <span style={{ color: 'var(--faint)', margin: '0 7px', fontSize: 12 }}>→</span>
+                      <span style={{ fontWeight: 600, color: 'var(--paper)' }}>{row.destination_city}</span>
                     </TD>
                     <TD>{row.airline?.replace(/_/g, ' ')}</TD>
                     <TD><ClassBadge value={row['class']} /></TD>
-                    <TD style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
+                    <TD style={{ color: 'var(--dim)', fontSize: 12 }}>
                       {row.stops?.replace(/_/g, ' ') || '—'}
                     </TD>
                     <TD>
                       <Sparkline prices={chronoPrices} highlightIdx={highlightIdx} />
                     </TD>
                     <TD style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
-                      <span className="gradient-text" style={{ fontSize: 14 }}>
+                      <span style={{ fontFamily: 'var(--mono)', fontSize: 14, color: 'var(--amber)' }}>
                         {INR.format(row.predicted_price)}
                       </span>
                     </TD>

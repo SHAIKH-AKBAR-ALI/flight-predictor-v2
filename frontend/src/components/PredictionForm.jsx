@@ -22,7 +22,7 @@ const defaultForm = {
 function Label({ icon, children, rightSlot }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+      <span className="mono-label" style={{ color: 'var(--dim)' }}>
         {icon}&nbsp; {children}
       </span>
       {rightSlot}
@@ -48,7 +48,7 @@ function SliderField({ label, icon, value, onChange, min, max, unit }) {
   return (
     <div>
       <Label icon={icon} rightSlot={
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa' }}>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 700, color: 'var(--amber)' }}>
           {value} {unit}
         </span>
       }>
@@ -58,7 +58,7 @@ function SliderField({ label, icon, value, onChange, min, max, unit }) {
         <div style={{
           position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
           height: 4, width: `${pct}%`, borderRadius: 2,
-          background: 'linear-gradient(90deg, #7c3aed, #2563eb)',
+          background: 'var(--amber)',
           pointerEvents: 'none',
         }} />
         <input
@@ -66,7 +66,7 @@ function SliderField({ label, icon, value, onChange, min, max, unit }) {
           onChange={e => onChange(Number(e.target.value))}
         />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 5 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--faint)', marginTop: 5 }}>
         <span>{min} {unit}</span>
         <span>{max} {unit}</span>
       </div>
@@ -81,8 +81,8 @@ function Spinner() {
       transition={{ duration: 0.75, repeat: Infinity, ease: 'linear' }}
       style={{
         width: 15, height: 15, flexShrink: 0,
-        border: '2px solid rgba(255,255,255,0.25)',
-        borderTopColor: '#fff', borderRadius: '50%',
+        border: '2px solid currentColor', opacity: 0.8,
+        borderTopColor: 'transparent', borderRadius: '50%',
       }}
     />
   )
@@ -91,29 +91,24 @@ function Spinner() {
 function RouteConnector({ from, to }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, paddingBottom: 2 }}>
-      <span style={{
-        fontSize: 9, color: 'rgba(255,255,255,0.28)',
-        letterSpacing: '0.1em', fontWeight: 700, textTransform: 'uppercase',
-      }}>
-        route
-      </span>
+      <span className="mono-label" style={{ fontSize: 9 }}>route</span>
       <motion.div
         animate={{ x: [-3, 3, -3] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
-          background: 'rgba(124,58,237,0.12)',
-          border: '1px solid rgba(124,58,237,0.28)',
+          background: 'var(--amber-dim)',
+          border: '1px solid rgba(255,179,36,0.3)',
           borderRadius: 20,
           padding: '6px 12px',
         }}
       >
-        <div style={{ width: 14, height: 1.5, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25))' }} />
+        <div style={{ width: 14, height: 1.5, background: 'linear-gradient(90deg, transparent, rgba(255,179,36,0.5))' }} />
         <span style={{ fontSize: 15 }}>✈️</span>
-        <div style={{ width: 14, height: 1.5, background: 'linear-gradient(90deg, rgba(255,255,255,0.25), transparent)' }} />
+        <div style={{ width: 14, height: 1.5, background: 'linear-gradient(90deg, rgba(255,179,36,0.5), transparent)' }} />
       </motion.div>
       <span style={{
-        fontSize: 10, color: 'rgba(124,58,237,0.75)', fontWeight: 600,
+        fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--amber)', fontWeight: 400,
         whiteSpace: 'nowrap', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis',
       }}>
         {from} → {to}
@@ -138,11 +133,11 @@ export default function PredictionForm({ onPredict, onExplain, loading }) {
       className="glass"
       style={{ padding: 'clamp(24px, 4vw, 44px)' }}
     >
-      <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6, letterSpacing: '-0.01em' }}>
-        <span className="gradient-text">Predict Flight Price</span>
+      <h2 style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 800, marginBottom: 6, letterSpacing: '-0.01em' }}>
+        What does this trip <span style={{ color: 'var(--amber)' }}>usually cost?</span>
       </h2>
-      <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, marginBottom: 32 }}>
-        Fill in your flight details to get an AI-powered price prediction
+      <p style={{ color: 'var(--dim)', fontSize: 14, marginBottom: 32 }}>
+        Describe the trip and the model estimates its typical fare from historical data.
       </p>
 
       {/* Airline */}
@@ -180,28 +175,17 @@ export default function PredictionForm({ onPredict, onExplain, loading }) {
       {/* Buttons */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <motion.button
-          whileHover={!busy ? { scale: 1.02, boxShadow: '0 8px 32px rgba(124,58,237,0.35)' } : {}}
+          whileHover={!busy ? { scale: 1.02 } : {}}
           whileTap={!busy ? { scale: 0.98 } : {}}
           onClick={() => !busy && onPredict(payload())}
           disabled={busy}
-          style={{
-            flex: '1 1 160px', padding: '14px 28px',
-            background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-            border: 'none', borderRadius: 12,
-            color: '#fff', fontSize: 15, fontWeight: 600,
-            cursor: busy ? 'not-allowed' : 'pointer',
-            opacity: loading.predict ? 0.75 : 1,
-            fontFamily: 'Inter, sans-serif',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
-            transition: 'opacity 0.2s',
-          }}
+          className="btn-amber"
+          style={{ flex: '1 1 160px', fontSize: 15, opacity: loading.predict ? 0.75 : 1 }}
         >
           <AnimatePresence mode="wait">
-            {loading.predict
-              ? <Spinner key="spin" />
-              : <span key="icon" style={{ fontSize: 17 }}>🔮</span>}
+            {loading.predict && <Spinner key="spin" />}
           </AnimatePresence>
-          {loading.predict ? 'Predicting…' : 'Predict Price'}
+          {loading.predict ? 'Estimating…' : 'Estimate typical fare'}
         </motion.button>
 
         <motion.button
@@ -209,25 +193,13 @@ export default function PredictionForm({ onPredict, onExplain, loading }) {
           whileTap={!busy ? { scale: 0.98 } : {}}
           onClick={() => !busy && onExplain(payload())}
           disabled={busy}
-          style={{
-            flex: '1 1 160px', padding: '14px 28px',
-            background: 'rgba(124,58,237,0.12)',
-            border: '1px solid rgba(124,58,237,0.35)',
-            borderRadius: 12,
-            color: '#a78bfa', fontSize: 15, fontWeight: 600,
-            cursor: busy ? 'not-allowed' : 'pointer',
-            opacity: loading.explain ? 0.75 : 1,
-            fontFamily: 'Inter, sans-serif',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
-            transition: 'opacity 0.2s',
-          }}
+          className="btn-ghost"
+          style={{ flex: '1 1 160px', fontSize: 15, opacity: loading.explain ? 0.75 : 1 }}
         >
           <AnimatePresence mode="wait">
-            {loading.explain
-              ? <Spinner key="spin" />
-              : <span key="icon" style={{ fontSize: 17 }}>🧠</span>}
+            {loading.explain && <Spinner key="spin" />}
           </AnimatePresence>
-          {loading.explain ? 'Analyzing…' : 'Explain with AI'}
+          {loading.explain ? 'Analyzing…' : 'Explain the price'}
         </motion.button>
       </div>
     </motion.div>
