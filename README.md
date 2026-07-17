@@ -4,7 +4,7 @@
 
 ### The AI flight agent that knows what a fair fare is
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1200&color=FFB324&center=true&vCenter=true&width=620&lines=%22Find+flights+Delhi+to+Mumbai+on+Friday%22;Searches+live+options+in+one+conversation;Checks+every+fare+against+300%2C000%2B+prices;Explains+the+price+with+SHAP+%2B+Llama+3.3;Books+it.+Boarding+pass+included.+%E2%9C%88" alt="typing demo" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1200&color=FFB324&center=true&vCenter=true&width=620&lines=%22Find+flights+Delhi+to+Mumbai+on+Friday%22;Searches+flight+options+in+one+conversation;Checks+every+fare+against+300%2C000%2B+prices;Explains+the+price+with+SHAP+%2B+Llama+3.3;Books+it.+Boarding+pass+included.+%E2%9C%88" alt="typing demo" />
 
 <br/>
 
@@ -233,6 +233,7 @@ cd frontend && npx playwright test
 | `SUPABASE_URL` / `SUPABASE_KEY` | ✅ | Supabase project → Settings → API |
 | `GROQ_API_KEY_2` | ◻️ | Optional second Groq account — becomes the agent's primary key with automatic failover |
 | `LANGSMITH_TRACING` + `LANGSMITH_API_KEY` | ◻️ | Optional — full agent traces in LangSmith, zero code changes |
+| `LANGSMITH_PROJECT` | ◻️ | Optional — LangSmith project name (e.g. `flight-agent`) |
 
 ---
 
