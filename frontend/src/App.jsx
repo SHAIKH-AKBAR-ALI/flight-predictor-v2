@@ -6,6 +6,9 @@ import AppPage from './pages/AppPage'
 export default function App() {
   const [hash, setHash] = useState(window.location.hash)
 
+  // ponytail: pre-warm Render free-tier backend (~50s cold start) while user reads/types
+  useEffect(() => { fetch('/health').catch(() => {}) }, [])
+
   useEffect(() => {
     const onChange = () => setHash(window.location.hash)
     window.addEventListener('hashchange', onChange)

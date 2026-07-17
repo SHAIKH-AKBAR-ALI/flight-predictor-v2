@@ -263,7 +263,10 @@ def _get_graph(key_env: str):
     if key_env not in _graphs:
         # LangSmith tracing: just set LANGSMITH_TRACING=true + LANGSMITH_API_KEY in .env
         _graphs[key_env] = create_react_agent(
-            ChatGroq(model=MODEL, temperature=0.3, max_retries=5, api_key=os.getenv(key_env)),
+            # ponytail: reasoning_effort=low — gpt-oss reasoning tokens dominated turn
+            # latency; bump back up only if tool-calling quality drops
+            ChatGroq(model=MODEL, temperature=0.3, max_retries=2,
+                     api_key=os.getenv(key_env), reasoning_effort="low"),
             [search_flights, book_flight, estimate_baseline, explain_price],
             prompt=SYSTEM_PROMPT,
         )
